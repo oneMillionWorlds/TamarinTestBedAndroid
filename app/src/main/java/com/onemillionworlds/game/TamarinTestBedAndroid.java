@@ -14,9 +14,11 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.onemillionworlds.example.MenuExampleState;
 import com.onemillionworlds.example.actions.ActionSets;
+import com.onemillionworlds.style.base.AndroidGlassStyles;
 import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarintestbed.TamarinTestbedExtraStyles;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.style.BaseStyles;
 import tamarin.android.actions.XrActionAndroidAppState;
@@ -52,7 +54,8 @@ public class TamarinTestBedAndroid extends SimpleApplication {
 
         GuiGlobals.initialize(this);
         BaseStyles.loadGlassStyle();
-        BaseStyles.loadStyleResources("com/onemillionworlds/tamarintestbed/tamarintestbed-extra-styles.groovy");
+        AndroidGlassStyles.initialize(assetManager);
+        TamarinTestbedExtraStyles.initialize(assetManager);
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
 
         getCamera().setFrustumPerspective(120f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
