@@ -18,12 +18,12 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.actions.XrActionAppState;
+import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.actions.state.Vector2fActionState;
 import com.onemillionworlds.tamarin.miniesupport.KinematicHandPhysics;
 import com.onemillionworlds.tamarin.miniesupport.PhysicsDebugVrAppState;
 import com.onemillionworlds.tamarin.miniesupport.PlayerVrPhysicsAppState;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
+import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
 import com.onemillionworlds.tamarin.vrhands.grabbing.GrabEventControl;
@@ -41,8 +41,8 @@ public class PhysicsExampleState extends BaseAppState{
     private static final float PLAYER_WALK_SPEED = 2;
 
     private final Node rootNodeDelegate = new Node("BlockMovingExampleState");
-    private XrAppState vrAppState;
-    private XrActionAppState openXrActionState;
+    private XrBaseAppState vrAppState;
+    private XrActionBaseAppState openXrActionState;
 
     private BulletAppState bulletAppState;
 
@@ -55,8 +55,8 @@ public class PhysicsExampleState extends BaseAppState{
     @Override
     protected void initialize(Application app){
         ((SimpleApplication)app).getRootNode().attachChild(rootNodeDelegate);
-        vrAppState = getState(XrAppState.ID, XrAppState.class);
-        openXrActionState = getState(XrActionAppState.ID, XrActionAppState.class);
+        vrAppState = getState(XrBaseAppState.ID, XrBaseAppState.class);
+        openXrActionState = getState(XrActionBaseAppState.ID, XrActionBaseAppState.class);
         VRHandsAppState vrHands = getState(VRHandsAppState.class);
 
 

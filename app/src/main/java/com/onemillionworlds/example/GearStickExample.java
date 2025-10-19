@@ -150,7 +150,7 @@ public class GearStickExample extends BaseAppState{
                     float distance1 = line1.findDistanceLineToPoint(naturalPositionLocal);
                     float distance2 = line2.findDistanceLineToPoint(naturalPositionLocal);
                     return Float.compare(distance1, distance2);
-                }).map(line -> line.findPointOfClosedApproach(naturalPositionLocal)).orElseThrow();
+                }).map(line -> line.findPointOfClosedApproach(naturalPositionLocal)).orElseThrow(() -> new RuntimeException("No point of closes approach for " + naturalPositionLocal));
             }
         });
         gearStick.addControl(grabControl);

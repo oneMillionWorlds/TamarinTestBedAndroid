@@ -191,7 +191,14 @@ public class MechanicalButtonExample extends BaseAppState{
         return new DisplayLight(simpleBox, colourControl);
     }
 
-    private record DisplayLight(Spatial light, ColourControl control) {
+    private static class DisplayLight{
+        private final Spatial light;
+        private final ColourControl control;
+
+        public DisplayLight(Spatial light, ColourControl control) {
+            this.light = light;
+            this.control = control;
+        }
 
         public void setDisplayIntensity(float intensity){
             control.setDisplayIntensity(intensity);

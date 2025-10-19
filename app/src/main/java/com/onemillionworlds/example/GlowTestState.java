@@ -16,7 +16,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.onemillionworlds.tamarin.openxr.XrAppState;
 import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -96,7 +95,7 @@ public class GlowTestState extends BaseAppState{
 
         exitBox(new Vector3f(-0.5f,1f, 9.6f));
 
-        getState(XrAppState.ID, XrAppState.class).movePlayersFeetToPosition(new Vector3f(0,0,10));
+        getState(XrBaseAppState.ID, XrBaseAppState.class).movePlayersFeetToPosition(new Vector3f(0,0,10));
     }
 
     @SuppressWarnings("DuplicatedCode") //each example is supposed to be mostly stand along so allow some duplication

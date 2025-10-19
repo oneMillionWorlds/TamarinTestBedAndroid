@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.onemillionworlds.TamarinTestBedAndroid"
         minSdk 28
-        targetSdk 32
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
@@ -23,15 +23,18 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     buildFeatures {
         viewBinding true
     }
-    packagingOptions {
+    packaging {
         jniLibs {
             useLegacyPackaging true
+        }
+        resources {
+            excludes += ["com/simsilica/lemur/style/base/glass-styles.groovy"]
         }
     }
     namespace 'com.onemillionworlds.android'
@@ -54,11 +57,22 @@ dependencies {
     implementation 'org.jmonkeyengine:jme3-android:'+jmonkeyengineVersion
     implementation 'org.jmonkeyengine:jme3-android-native:'+jmonkeyengineVersion
     implementation 'org.jmonkeyengine:jme3-core:'+jmonkeyengineVersion
+    implementation 'org.jmonkeyengine:jme3-effects:'+jmonkeyengineVersion
+    implementation 'org.jmonkeyengine:jme3-plugins:'+jmonkeyengineVersion
+    implementation 'org.jmonkeyengine:jme3-testdata:'+jmonkeyengineVersion
+    implementation('com.onemillionworlds:deeptokens:1.2.0') {
+        exclude group: 'org.jmonkeyengine', module: 'jme3-core'
+        exclude group: 'org.jmonkeyengine', module: 'jme3-lwjgl3'  // removes LWJGL transitives
+        exclude group: 'org.lwjgl'                                  // belt-and-braces on LWJGL
+    }
 
-    implementation "com.onemillionworlds:tamarin-android:3.0.0"
+    implementation "com.onemillionworlds:tamarin-android:3.0.0-alpha1"
 
     implementation 'com.simsilica:lemur:1.16.0'
     implementation 'com.simsilica:lemur-proto:1.13.0'
+
+    implementation "com.google.guava:guava:33.5.0-android" // <-- I don't understand why this is necessary as lemur brings it in, but the Selector dropdown won't work with out this
+    implementation 'com.github.stephengold:Minie:9.0.1'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
