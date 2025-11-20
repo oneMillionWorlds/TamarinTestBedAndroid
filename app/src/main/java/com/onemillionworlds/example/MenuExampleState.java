@@ -121,10 +121,6 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new PreciseGrabExampleState());
         });
 
-        lemurWindow.addChild(new Button("VR exit reenter Test")).addClickCommands(source -> {
-            app.getStateManager().detach(this);
-            app.getStateManager().attach(new DetachAndReattachExampleState());
-        });
 
         lemurWindow.addChild(new Button("VR sound Test")).addClickCommands(source -> {
             app.getStateManager().detach(this);
