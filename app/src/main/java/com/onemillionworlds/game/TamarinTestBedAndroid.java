@@ -1,6 +1,7 @@
 package com.onemillionworlds.game;
 
 
+import android.app.Activity;
 import android.util.Log;
 import com.jme3.app.DebugKeysAppState;
 import com.jme3.app.SimpleApplication;
@@ -29,10 +30,11 @@ import static com.onemillionworlds.example.Manifest.manifest;
 
 public class TamarinTestBedAndroid extends SimpleApplication {
 
+
+    boolean initialised = false;
+    Activity androidActivity;
     public TamarinTestBedAndroid() {
-        super(new XrAndroidAppState(new XrSettings()),
-                new XrActionAndroidAppState(manifest(), ActionSets.MAIN),
-                new VRHandsAppState(handSpec()),
+        super(
                 //these are just the default JME states (that we have to explicitly select because of using the constructor that takes states)
                 new StatsAppState(),
                 new ConstantVerifierState(),
@@ -43,34 +45,51 @@ public class TamarinTestBedAndroid extends SimpleApplication {
     @Override
     public void simpleInitApp() {
 
-        getViewPort().setBackgroundColor(ColorRGBA.Brown);
 
-        XrBaseAppState vrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
+    }
 
-        vrAppState.movePlayersFeetToPosition(new Vector3f(0,0,10));
-        vrAppState.playerLookAtPosition(new Vector3f(0,0,0));
+    public void setAndroidActivity(Activity androidActivity){
+        this.androidActivity = androidActivity;
+    }
 
-        getStateManager().attach(new MenuExampleState());
+    @Override
+    public void update() {
+        super.update();
+        if(androidActivity!=null && !initialised) {
+            initialised = true;
+            getStateManager().attach(new XrAndroidAppState(androidActivity, new XrSettings()));
 
-        GuiGlobals.initialize(this);
-        BaseStyles.loadGlassStyle();
-        AndroidGlassStyles.initialize(assetManager);
-        TamarinTestbedExtraStyles.initialize(assetManager);
-        GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
+            getStateManager().attach(new XrActionAndroidAppState(manifest(), ActionSets.MAIN));
+            getViewPort().setBackgroundColor(ColorRGBA.Brown);
 
-        getCamera().setFrustumPerspective(120f, (float)cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
+            XrBaseAppState vrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
 
-        XrBaseAppState xrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
-        xrAppState.runAfterInitialisation(() -> Log.i("TamarinTestBed", "System is: "+xrAppState.getSystemName()));
-        xrAppState.setMainViewportConfiguration(vp -> {
-            vp.setBackgroundColor(ColorRGBA.Brown);
-        });
+            vrAppState.movePlayersFeetToPosition(new Vector3f(0, 0, 10));
+            vrAppState.playerLookAtPosition(new Vector3f(0, 0, 0));
 
 
-        //set up some lights to make the hands look better
-        rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal(), new ColorRGBA(0.6f, 0.6f, 0.4f, 1f)));
-        rootNode.addLight(new AmbientLight(new ColorRGBA(0.1f, 0.1f, 0.1f, 1f)));
-        rootNode.addLight(new DirectionalLight(new Vector3f(0, -1, 1).normalizeLocal(), new ColorRGBA(0.5f, 0.45f, 0.5f, 1f)));
+            GuiGlobals.initialize(this);
+            AndroidGlassStyles.initialize(assetManager);
+            TamarinTestbedExtraStyles.initialize(assetManager);
+            GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
 
+            getCamera().setFrustumPerspective(120f, (float) cam.getWidth() / cam.getHeight(), 0.01f, 1000f);
+
+            XrBaseAppState xrAppState = getStateManager().getState(XrBaseAppState.ID, XrBaseAppState.class);
+            xrAppState.runAfterInitialisation(() -> Log.i("TamarinTestBed", "System is: " + xrAppState.getSystemName()));
+            xrAppState.setMainViewportConfiguration(vp -> {
+                vp.setBackgroundColor(ColorRGBA.Brown);
+            });
+
+
+            //set up some lights to make the hands look better
+            rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal(), new ColorRGBA(0.6f, 0.6f, 0.4f, 1f)));
+            rootNode.addLight(new AmbientLight(new ColorRGBA(0.1f, 0.1f, 0.1f, 1f)));
+            rootNode.addLight(new DirectionalLight(new Vector3f(0, -1, 1).normalizeLocal(), new ColorRGBA(0.5f, 0.45f, 0.5f, 1f)));
+
+            getStateManager().attach(new VRHandsAppState(handSpec()));
+            getStateManager().attach(new MenuExampleState());
+
+        }
     }
 }
