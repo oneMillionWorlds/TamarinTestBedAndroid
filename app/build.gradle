@@ -1,3 +1,6 @@
+import com.onemillionworlds.DeepTokenifyDirectory
+import com.onemillionworlds.DeepTokenifyFile
+
 plugins {
     id 'com.android.application'
     id "io.github.0ffz.github-packages" version "1.2.1" // Plugin for anonymous inclusion of artifacts hosted in github package registry
@@ -66,7 +69,8 @@ dependencies {
         exclude group: 'org.lwjgl'                                  // belt-and-braces on LWJGL
     }
 
-    implementation "com.onemillionworlds:tamarin-android:3.0.0-alpha1"
+    implementation "com.onemillionworlds:tamarin-android:3.0.0-alpha1g"
+
 
     implementation 'com.simsilica:lemur:1.16.0'
     implementation 'com.simsilica:lemur-proto:1.13.0'
@@ -78,4 +82,33 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
+}
+
+
+tasks.register("generateButtonPanel", DeepTokenifyFile){
+    inputFile = rootProject.file('deepTokenTemplates/buttonPanel.png')
+    outputFile = file('src/main/generated/resources/Models/buttonPanel.j3o')
+    tokenWidth = 2f
+    tokenDepth = 0.05f
+}
+
+tasks.register("generateButtons", DeepTokenifyDirectory){
+    inputDirectory = rootProject.file('deepTokenTemplates/buttons')
+    outputDirectory = file('src/main/generated/resources/Models/buttons')
+    tokenWidth = 0.25f
+    tokenDepth = 0.1f
+}
+
+// Include the generated Java resources directory in the Android source set
+android {
+    sourceSets {
+        main {
+            resources.srcDirs += ['src/main/generated/resources']
+        }
+    }
+}
+
+// On Android, there is no processResources task. Hook generation to run before the build.
+tasks.named("preBuild") {
+    dependsOn("generateButtons", "generateButtonPanel")
 }

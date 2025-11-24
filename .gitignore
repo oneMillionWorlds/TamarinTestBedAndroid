@@ -10,3 +10,6 @@
 
 local.properties
 /app/build/
+/buildSrc/.gradle/
+/buildSrc/build/
+/app/src/main/generated/
