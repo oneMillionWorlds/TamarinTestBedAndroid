@@ -43,11 +43,6 @@ public class TamarinTestBedAndroid extends SimpleApplication {
                 new ConstantVerifierState(),
                 new AudioListenerState(),
                 new DebugKeysAppState());
-        AppSettings settings = new AppSettings(true);
-        settings.setTitle("Tamarin OpenXR Android Example");
-        settings.setVSync(false);
-        settings.setSamples(4);
-        setSettings(settings);
     }
 
     @Override
