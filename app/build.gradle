@@ -69,7 +69,7 @@ dependencies {
         exclude group: 'org.lwjgl'                                  // belt-and-braces on LWJGL
     }
 
-    implementation "com.onemillionworlds:tamarin-android:3.0.0-alpha2"
+    implementation "com.onemillionworlds:tamarin-android:3.0.0"
 
 
     implementation 'com.simsilica:lemur:1.16.0'
