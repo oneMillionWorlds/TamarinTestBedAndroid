@@ -159,7 +159,9 @@ public class GlowTestState extends BaseAppState{
         BloomFilter bf=new BloomFilter(BloomFilter.GlowMode.Objects);
         bf.setBlurScale(3f);
         fpp.addFilter(bf);
-        fpp.setNumSamples(samples);
+        if(samples>0) {
+            fpp.setNumSamples(samples);
+        }
         return fpp;
     }
 }
