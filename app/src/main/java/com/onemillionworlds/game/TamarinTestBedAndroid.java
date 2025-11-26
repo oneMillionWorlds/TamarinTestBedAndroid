@@ -13,6 +13,7 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.system.AppSettings;
 import com.onemillionworlds.example.MenuExampleState;
 import com.onemillionworlds.example.actions.ActionSets;
 import com.onemillionworlds.style.base.AndroidGlassStyles;
@@ -40,6 +41,11 @@ public class TamarinTestBedAndroid extends SimpleApplication {
                 new ConstantVerifierState(),
                 new AudioListenerState(),
                 new DebugKeysAppState());
+        AppSettings settings = new AppSettings(true);
+        settings.setTitle("Tamarin OpenXR Android Example");
+        settings.setVSync(false);
+        settings.setSamples(4);
+        setSettings(settings);
     }
 
     @Override
