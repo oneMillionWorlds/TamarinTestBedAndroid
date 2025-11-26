@@ -15,14 +15,16 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.system.AppSettings;
 import com.onemillionworlds.example.MenuExampleState;
+import com.onemillionworlds.example.actions.ActionHandles;
 import com.onemillionworlds.example.actions.ActionSets;
 import com.onemillionworlds.style.base.AndroidGlassStyles;
 import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.openxr.XrSettings;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
+import com.onemillionworlds.tamarin.vrhands.skeletonsynthesis.DefaultSkeletonSynthesiser;
+import com.onemillionworlds.tamarin.vrhands.skeletonsynthesis.SkeletonSynthesiser;
 import com.onemillionworlds.tamarintestbed.TamarinTestbedExtraStyles;
 import com.simsilica.lemur.GuiGlobals;
-import com.simsilica.lemur.style.BaseStyles;
 import tamarin.android.actions.XrActionAndroidAppState;
 import tamarin.android.openxr.XrAndroidAppState;
 
@@ -93,7 +95,9 @@ public class TamarinTestBedAndroid extends SimpleApplication {
             rootNode.addLight(new AmbientLight(new ColorRGBA(0.1f, 0.1f, 0.1f, 1f)));
             rootNode.addLight(new DirectionalLight(new Vector3f(0, -1, 1).normalizeLocal(), new ColorRGBA(0.5f, 0.45f, 0.5f, 1f)));
 
-            getStateManager().attach(new VRHandsAppState(handSpec()));
+            VRHandsAppState vrHands = new VRHandsAppState(handSpec());
+            vrHands.setSkeletonSynthesiser(new DefaultSkeletonSynthesiser(ActionHandles.TRIGGER,ActionHandles.GRIP,SkeletonSynthesiser.SynthesiseMode.FALLBACK_ONLY));
+            getStateManager().attach(vrHands);
             getStateManager().attach(new MenuExampleState());
 
         }
