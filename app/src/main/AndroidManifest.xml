@@ -4,6 +4,11 @@
     <!-- Tell the system this app requires OpenGL ES 3.2. -->
     <uses-feature android:glEsVersion="0x00030002" android:required="true"/>
 
+    <!-- Hand tracking is supported but not required (the app also works with controllers).
+         Without these the Quest will never switch to hand tracking for this app -->
+    <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+    <uses-feature android:name="oculus.software.handtracking" android:required="false" />
+
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"

@@ -149,6 +149,16 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new PhysicsExampleState());
         });
 
+        lemurWindow.addChild(new Button("Pause when system menu opened or headset removed")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new SessionFocusExampleState());
+        });
+
+        lemurWindow.addChild(new Button("Pause on any gameplay interrupt (system menu, headset off, controller lost)")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new GameplayInterruptExampleState());
+        });
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );

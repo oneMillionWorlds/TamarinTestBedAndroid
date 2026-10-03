@@ -9,6 +9,7 @@ import com.onemillionworlds.tamarin.actions.actionprofile.Action;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
 import com.onemillionworlds.tamarin.actions.controllerprofile.GoogleDaydreamController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.HandInteractionExt;
 import com.onemillionworlds.tamarin.actions.controllerprofile.HtcViveController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.MixedRealityMotionController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController;
@@ -33,6 +34,9 @@ public class Manifest {
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().squeezeValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().squeezeValue())
+                // hand tracking: closing the hand
+                .withSuggestedBinding(HandInteractionExt.PROFILE, HandInteractionExt.pathBuilder().leftHand().graspValue())
+                .withSuggestedBinding(HandInteractionExt.PROFILE, HandInteractionExt.pathBuilder().rightHand().graspValue())
                 .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F1), true)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F2), true)
                 .build();
@@ -60,6 +64,9 @@ public class Manifest {
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().triggerValue())
+                // hand tracking: thumb and index finger pinch
+                .withSuggestedBinding(HandInteractionExt.PROFILE, HandInteractionExt.pathBuilder().leftHand().pinchValue())
+                .withSuggestedBinding(HandInteractionExt.PROFILE, HandInteractionExt.pathBuilder().rightHand().pinchValue())
                 .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F3), false)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F4), false)
                 .build();
