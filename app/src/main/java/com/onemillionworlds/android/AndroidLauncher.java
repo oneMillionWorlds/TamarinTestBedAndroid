@@ -24,4 +24,22 @@ public class AndroidLauncher extends AndroidHarness {
         super.onResume();
         ((TamarinTestBedAndroid)getJmeApplication()).setAndroidActivity(this);
     }
+
+    /**
+     * When the application is stopped (e.g. app.stop()) the jME context is torn down on the GL thread (nulling its
+     * input handler) and then the activity is finished, which triggers onPause -> loseFocus. AndroidHarness's
+     * loseFocus unconditionally asks the (now destroyed) context for its JoyInput, which throws a
+     * NullPointerException. If the context has already been destroyed there is nothing left to pause, so skip it.
+     */
+    @Override
+    public void loseFocus() {
+        if (app != null && app.getContext() != null && !app.getContext().isCreated()) {
+            if (view != null) {
+                view.onPause();
+            }
+            isGLThreadPaused = true;
+            return;
+        }
+        super.loseFocus();
+    }
 }

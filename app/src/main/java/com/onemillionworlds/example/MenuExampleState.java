@@ -159,6 +159,11 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new GameplayInterruptExampleState());
         });
 
+        lemurWindow.addChild(new Button("Passthrough (mixed reality)")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new PassthroughExampleState());
+        });
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );

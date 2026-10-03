@@ -60,7 +60,11 @@ public class TamarinTestBedAndroid extends SimpleApplication {
         super.update();
         if(androidActivity!=null && !initialised) {
             initialised = true;
-            getStateManager().attach(new XrAndroidAppState(androidActivity, new XrSettings()));
+            XrSettings xrSettings = new XrSettings();
+            xrSettings.setPassthroughSupport(true); // allows passthrough to be turned on at runtime (see PassthroughExampleState)
+            //xrSettings.removeRequiredExtension("XR_FB_passthrough");
+            xrSettings.setPreferFbPassthrough(true); // uncomment to test the XR_FB_passthrough route even if the standard route is available
+            getStateManager().attach(new XrAndroidAppState(androidActivity, xrSettings));
 
             getStateManager().attach(new XrActionAndroidAppState(manifest(), ActionSets.MAIN));
             getViewPort().setBackgroundColor(ColorRGBA.Brown);
