@@ -6,15 +6,19 @@ import com.onemillionworlds.example.actions.ActionHandles;
 import com.onemillionworlds.tamarin.actions.ActionType;
 import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.actionprofile.Action;
+import com.onemillionworlds.tamarin.actions.actionprofile.ActionHandle;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionManifest;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionSet;
 import com.onemillionworlds.tamarin.actions.controllerprofile.GoogleDaydreamController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.HandInteractionExt;
 import com.onemillionworlds.tamarin.actions.controllerprofile.HtcViveController;
+import com.onemillionworlds.tamarin.actions.controllerprofile.MetaHandMicrogestures;
 import com.onemillionworlds.tamarin.actions.controllerprofile.MixedRealityMotionController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.ValveIndexController;
+
+import java.util.function.Function;
 
 public class Manifest {
     public static ActionManifest manifest(){
@@ -130,6 +134,16 @@ public class Manifest {
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F6), true)
                 .build();
 
+        /*
+         * META ONLY thumb microgestures (bare hands). On other runtimes these bindings are skipped and the actions
+         * never fire. Used by MetaOnlyHandGesturesExampleState. The numpad keys simulate them in desktop simulation mode.
+         */
+        Action microgestureTap = microgestureAction(ActionHandles.MICROGESTURE_TAP, "Thumb tap", MetaHandMicrogestures.BindingPathBuilderHand::tapThumb, KeyInput.KEY_NUMPAD5);
+        Action microgestureSwipeLeft = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_LEFT, "Thumb swipe left", MetaHandMicrogestures.BindingPathBuilderHand::swipeLeft, KeyInput.KEY_NUMPAD4);
+        Action microgestureSwipeRight = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_RIGHT, "Thumb swipe right", MetaHandMicrogestures.BindingPathBuilderHand::swipeRight, KeyInput.KEY_NUMPAD6);
+        Action microgestureSwipeForward = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_FORWARD, "Thumb swipe forward", MetaHandMicrogestures.BindingPathBuilderHand::swipeForward, KeyInput.KEY_NUMPAD8);
+        Action microgestureSwipeBackward = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_BACKWARD, "Thumb swipe backward", MetaHandMicrogestures.BindingPathBuilderHand::swipeBackward, KeyInput.KEY_NUMPAD2);
+
         return ActionManifest.builder()
                 .withActionSet(ActionSet
                         .builder()
@@ -143,7 +157,26 @@ public class Manifest {
                         .withAction(movementDPad)
                         .withAction(walk)
                         .withAction(openHandMenu)
+                        .withAction(microgestureTap)
+                        .withAction(microgestureSwipeLeft)
+                        .withAction(microgestureSwipeRight)
+                        .withAction(microgestureSwipeForward)
+                        .withAction(microgestureSwipeBackward)
                         .build()
                 ).build();
+    }
+
+    /**
+     * META ONLY. A boolean action bound to a thumb microgesture on either hand.
+     */
+    private static Action microgestureAction(ActionHandle actionHandle, String translatedName, Function<MetaHandMicrogestures.BindingPathBuilderHand, String> gesture, int simulationKey){
+        return Action.builder()
+                .actionHandle(actionHandle)
+                .translatedName(translatedName)
+                .actionType(ActionType.BOOLEAN)
+                .withSuggestedBinding(MetaHandMicrogestures.PROFILE, gesture.apply(MetaHandMicrogestures.pathBuilder().leftHand()))
+                .withSuggestedBinding(MetaHandMicrogestures.PROFILE, gesture.apply(MetaHandMicrogestures.pathBuilder().rightHand()))
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(simulationKey), false)
+                .build();
     }
 }

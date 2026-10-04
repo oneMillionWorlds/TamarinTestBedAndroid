@@ -17,4 +17,13 @@ public class ActionHandles{
 
     public static final ActionHandle WALK = new ActionHandle(ActionSets.MAIN, "walk");
     public static final ActionHandle OPEN_HAND_MENU = new ActionHandle(ActionSets.MAIN, "open_hand_menu");
+
+    /*
+     * META ONLY thumb microgestures (bare hands). See MetaOnlyHandGesturesExampleState
+     */
+    public static final ActionHandle MICROGESTURE_TAP = new ActionHandle(ActionSets.MAIN, "microgesture_tap");
+    public static final ActionHandle MICROGESTURE_SWIPE_LEFT = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_left");
+    public static final ActionHandle MICROGESTURE_SWIPE_RIGHT = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_right");
+    public static final ActionHandle MICROGESTURE_SWIPE_FORWARD = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_forward");
+    public static final ActionHandle MICROGESTURE_SWIPE_BACKWARD = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_backward");
 }

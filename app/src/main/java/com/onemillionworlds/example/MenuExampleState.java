@@ -164,6 +164,11 @@ public class MenuExampleState extends BaseAppState{
             app.getStateManager().attach(new PassthroughExampleState());
         });
 
+        lemurWindow.addChild(new Button("Hand gestures: microgestures and finger pinches (META ONLY)")).addClickCommands(source -> {
+            app.getStateManager().detach(this);
+            app.getStateManager().attach(new MetaOnlyHandGesturesExampleState());
+        });
+
         lemurWindow.addChild(new Button("Exit")).addClickCommands(source ->
             getApplication().stop()
         );
