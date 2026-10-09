@@ -17,6 +17,8 @@ import com.onemillionworlds.tamarin.actions.controllerprofile.MixedRealityMotion
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.ValveIndexController;
+import com.onemillionworlds.tamarin.handgestures.Finger;
+import com.onemillionworlds.tamarin.handgestures.HandGestures;
 
 import java.util.function.Function;
 
@@ -68,9 +70,10 @@ public class Manifest {
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().triggerValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().triggerValue())
-                // hand tracking: thumb and index finger pinch
-                .withSuggestedBinding(HandInteractionExt.PROFILE, HandInteractionExt.pathBuilder().leftHand().pinchValue())
-                .withSuggestedBinding(HandInteractionExt.PROFILE, HandInteractionExt.pathBuilder().rightHand().pinchValue())
+                // hand tracking: thumb and index finger pinch. This also suggests the runtime's own pinch binding
+                // (HandInteractionExt), which is used where the runtime supports it, otherwise Tamarin detects the pinch
+                .withGestureBinding(HandSide.LEFT, HandGestures.pinch(Finger.INDEX))
+                .withGestureBinding(HandSide.RIGHT, HandGestures.pinch(Finger.INDEX))
                 .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F3), false)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F4), false)
                 .build();
@@ -144,6 +147,56 @@ public class Manifest {
         Action microgestureSwipeForward = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_FORWARD, "Thumb swipe forward", MetaHandMicrogestures.BindingPathBuilderHand::swipeForward, KeyInput.KEY_NUMPAD8);
         Action microgestureSwipeBackward = microgestureAction(ActionHandles.MICROGESTURE_SWIPE_BACKWARD, "Thumb swipe backward", MetaHandMicrogestures.BindingPathBuilderHand::swipeBackward, KeyInput.KEY_NUMPAD2);
 
+        /*
+         * A Tamarin side (synthetic) gesture binding. Tamarin detects the thumbs up from the hand joints, so this works on
+         * any runtime with hand tracking (not just Meta). Used by MetaOnlyHandGesturesExampleState. Numpad 0 simulates it.
+         */
+        Action resetCube = Action.builder()
+                .actionHandle(ActionHandles.RESET_CUBE)
+                .translatedName("Reset cube")
+                .actionType(ActionType.BOOLEAN)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().xClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().aClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().aClick())
+                .withGestureBinding(HandSide.LEFT, HandGestures.thumbsUp())
+                .withGestureBinding(HandSide.RIGHT, HandGestures.thumbsUp())
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD0), false)
+                .build();
+
+        /*
+         * Spins the cube while held. Thumb and ring finger pinch (no OpenXR binding exists for that, so it is a gesture
+         * binding) or the B/Y buttons. Used by MetaOnlyHandGesturesExampleState. Numpad 7 simulates it.
+         */
+        Action spinCube = Action.builder()
+                .actionHandle(ActionHandles.SPIN_CUBE)
+                .translatedName("Spin cube")
+                .actionType(ActionType.BOOLEAN)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().yClick())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().bClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().bClick())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().bClick())
+                .withGestureBinding(HandSide.LEFT, HandGestures.pinch(Finger.RING))
+                .withGestureBinding(HandSide.RIGHT, HandGestures.pinch(Finger.RING))
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD7), false)
+                .build();
+
+        /*
+         * A float action, the cube grows with its value. Thumb and middle finger pinch strength (a gesture binding) or the
+         * grip. Used by MetaOnlyHandGesturesExampleState. Numpad 9 simulates it.
+         */
+        Action growCube = Action.builder()
+                .actionHandle(ActionHandles.GROW_CUBE)
+                .translatedName("Grow cube")
+                .actionType(ActionType.FLOAT)
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().squeeze())
+                .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().squeezeValue())
+                .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().squeezeValue())
+                .withGestureBinding(HandSide.LEFT, HandGestures.pinch(Finger.MIDDLE))
+                .withGestureBinding(HandSide.RIGHT, HandGestures.pinch(Finger.MIDDLE))
+                .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD9), false)
+                .build();
+
         return ActionManifest.builder()
                 .withActionSet(ActionSet
                         .builder()
@@ -162,6 +215,9 @@ public class Manifest {
                         .withAction(microgestureSwipeRight)
                         .withAction(microgestureSwipeForward)
                         .withAction(microgestureSwipeBackward)
+                        .withAction(resetCube)
+                        .withAction(spinCube)
+                        .withAction(growCube)
                         .build()
                 ).build();
     }

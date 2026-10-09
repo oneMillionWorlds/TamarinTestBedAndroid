@@ -26,4 +26,17 @@ public class ActionHandles{
     public static final ActionHandle MICROGESTURE_SWIPE_RIGHT = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_right");
     public static final ActionHandle MICROGESTURE_SWIPE_FORWARD = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_forward");
     public static final ActionHandle MICROGESTURE_SWIPE_BACKWARD = new ActionHandle(ActionSets.MAIN, "microgesture_swipe_backward");
+
+    /**
+     * Bound to a Tamarin detected gesture (thumbs up), works on any runtime with hand tracking. See MetaOnlyHandGesturesExampleState
+     */
+    public static final ActionHandle RESET_CUBE = new ActionHandle(ActionSets.MAIN, "reset_cube");
+    /**
+     * Bound to a ring finger pinch (Tamarin gesture binding) and controller buttons. See MetaOnlyHandGesturesExampleState
+     */
+    public static final ActionHandle SPIN_CUBE = new ActionHandle(ActionSets.MAIN, "spin_cube");
+    /**
+     * A float action, bound to the middle finger pinch strength (Tamarin gesture binding) and the grip. See MetaOnlyHandGesturesExampleState
+     */
+    public static final ActionHandle GROW_CUBE = new ActionHandle(ActionSets.MAIN, "grow_cube");
 }
