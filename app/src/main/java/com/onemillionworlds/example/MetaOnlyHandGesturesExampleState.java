@@ -19,9 +19,8 @@ import com.onemillionworlds.tamarin.actions.HandSide;
 import com.onemillionworlds.tamarin.actions.XrActionBaseAppState;
 import com.onemillionworlds.tamarin.actions.actionprofile.ActionHandle;
 import com.onemillionworlds.tamarin.actions.controllerprofile.MetaHandMicrogestures;
-import com.onemillionworlds.tamarin.handgestures.Finger;
-import com.onemillionworlds.tamarin.handgestures.HandGestureSourcePreference;
-import com.onemillionworlds.tamarin.handgestures.HandGestureState;
+import com.onemillionworlds.tamarin.actions.gestures.HandGestureSourcePreference;
+import com.onemillionworlds.tamarin.actions.gestures.HandTrackingAimState;
 import com.onemillionworlds.tamarin.openxr.XrBaseAppState;
 import com.onemillionworlds.tamarin.vrhands.VRHandsAppState;
 import com.onemillionworlds.tamarin.vrhands.functions.FunctionRegistration;
@@ -32,8 +31,6 @@ import com.onemillionworlds.example.actions.ActionHandles;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Demonstrates hand tracking (bare hands, no controllers) gestures by moving cubes around. Each hand controls its own
@@ -51,30 +48,29 @@ import java.util.function.Function;
  *     <li>tap the thumb on the side of the index finger to make the cube change colour</li>
  * </ul>
  * <p>
- *     2) Actions with Tamarin gesture bindings (see the action manifest). Each action is bound to both controller
- *     buttons and a hand gesture, and the game code just reads the action as normal (it doesn't know or care which was
- *     used). Tamarin uses the runtime's gesture recognition where available (Meta's XR_FB_hand_tracking_aim) and its own
- *     (worked out from the hand's joints, so it works on any runtime with hand tracking) otherwise:
+ *     2) Actions with gesture bindings (see withGestureBinding in the action manifest). Each action is bound to both
+ *     controller buttons and a hand gesture, and the game code just reads the action as normal (it doesn't know or care
+ *     which was used). Each gesture comes from the runtime's own gesture recognition where it has one (the index pinch
+ *     via XR_EXT_hand_interaction, the other pinches via Meta's XR_FB_hand_tracking_aim) and from Tamarin's otherwise
+ *     (worked out from the hand's joints, so it works on any runtime with hand tracking):
  * </p>
  * <ul>
- *     <li>GROW_CUBE (float): pinch the thumb and middle finger together (or squeeze the grip) to grow the cube</li>
+ *     <li>GROW_CUBE (float): pinch the thumb and middle finger together (or squeeze the grip) to grow the cube. As a
+ *     float action it gets the pinch's strength, so the cube grows as the fingers get closer</li>
  *     <li>SPIN_CUBE: pinch the thumb and ring finger together (or hold B/Y) to spin the cube</li>
  *     <li>RESET_CUBE: give a thumbs up (or press X on Touch, A on Index) to reset the cube</li>
- *     <li>TRIGGER: the thumb and index finger pinch. Binding that gesture also suggests the runtime's own pinch binding
- *     (pinch_ext), which is used where the runtime supports it (Quest), otherwise Tamarin detects the pinch</li>
+ *     <li>TRIGGER: the thumb and index finger pinch, which clicks the Lemur buttons</li>
  * </ul>
  * <p>
- *     The button switches the hand gesture source preference. AUTOMATIC uses the runtime's version of a gesture if it
- *     has one and Tamarin's otherwise. RUNTIME_ONLY only uses the runtime's pinches. TAMARIN_ONLY always uses Tamarin's
- *     gestures (while the hand is tracked). This lets Meta's and Tamarin's gestures be compared.
+ *     The button switches the (global) hand gesture source preference. AUTOMATIC uses the runtime's version of a
+ *     gesture if it has one and Tamarin's otherwise. RUNTIME_ONLY never uses Tamarin's version of a gesture the runtime
+ *     could provide (so the pinches only work if the runtime supports them). TAMARIN_ONLY always uses Tamarin's
+ *     gestures. This lets Meta's and Tamarin's gestures be compared. The text shows which actions are active for
+ *     each hand. That includes FIST, POINT and THUMBS_UP, which are bound only to gestures and exist just to be shown.
  * </p>
  * <p>
- *     3) {@link XrActionBaseAppState#getHandGestureState(HandSide)}, for things that aren't really actions: the bars.
- * </p>
- * <p>
- *     The bars under each cube show the raw values. The top row compares the runtime's (blue, left of each pair) and
- *     Tamarin's (orange, right of each pair) pinch strength for each finger. The bottom row is Tamarin only gestures.
- *     Bars turn green when the gesture is "on".
+ *     Tamarin only detects gestures from a bare hand. The text shows where each hand's joints are coming from, if it
+ *     says CONTROLLER (e.g. Index controllers on SteamVR, which sense the fingers) Tamarin won't detect gestures.
  * </p>
  * <p>
  *     In desktop simulation the microgestures are on the numpad (4/6/8/2 to swipe, 5 to tap) and act as the right
@@ -89,12 +85,6 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
      * How long (seconds) after changing the gesture source further clicks on the source button are ignored
      */
     private static final float SOURCE_BUTTON_DEAD_TIME = 0.1f;
-
-    private static final float BAR_MAX_HEIGHT = 0.2f;
-    private static final float BAR_WIDTH = 0.02f;
-    private static final ColorRGBA RUNTIME_BAR_COLOUR = new ColorRGBA(0.2f, 0.6f, 1f, 1f);
-    private static final ColorRGBA TAMARIN_BAR_COLOUR = new ColorRGBA(1f, 0.55f, 0.1f, 1f);
-    private static final ColorRGBA BAR_ACTIVE_COLOUR = ColorRGBA.Green;
 
     private static final ColorRGBA[] CUBE_COLOURS = new ColorRGBA[]{
             ColorRGBA.Orange, ColorRGBA.Cyan, ColorRGBA.Magenta, ColorRGBA.Yellow, ColorRGBA.Green
@@ -134,12 +124,10 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
                 "  Middle pinch (grip) -> grow\n" +
                 "  Ring pinch (B/Y) -> spin\n" +
                 "  Thumbs up (X, or A on Index) -> reset\n" +
-                "  Index pinch -> trigger\n\n" +
-                "Button: AUTOMATIC -> Meta if available, else Tamarin.\n" +
-                "  RUNTIME_ONLY -> Meta only. TAMARIN_ONLY -> Tamarin only.\n\n" +
-                "Top bars -> I M R L pinch, Meta blue, Tamarin orange.\n" +
-                "Bottom bars -> Fist, Point, Thumbs up, Palm to you.\n" +
-                "Green -> gesture on."));
+                "  Index pinch -> click\n" +
+                "  Fist, point, thumbs up -> just shown below\n\n" +
+                "Button: AUTOMATIC -> runtime's gesture if it has one, else Tamarin's.\n" +
+                "  RUNTIME_ONLY -> runtime's only. TAMARIN_ONLY -> Tamarin's only."));
         statusLabel = lemurWindow.addChild(new Label(""));
         lastGestureLabel = lemurWindow.addChild(new Label("Last microgesture: none"));
 
@@ -151,8 +139,8 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
                 return;
             }
             timeSinceSourceChange = 0;
-            // cycles AUTOMATIC -> RUNTIME_ONLY -> TAMARIN_ONLY. This applies to everything using hand gestures
-            // (including gesture bindings on actions), so the example resets it when it closes
+            // cycles AUTOMATIC -> RUNTIME_ONLY -> TAMARIN_ONLY. This is global (it applies to every gesture binding)
+            // so the example resets it when it closes
             HandGestureSourcePreference[] preferences = HandGestureSourcePreference.values();
             HandGestureSourcePreference current = xrActionAppState.getHandGestureSourcePreference();
             xrActionAppState.setHandGestureSourcePreference(preferences[(current.ordinal() + 1) % preferences.length]);
@@ -191,25 +179,52 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
         super.update(tpf);
         timeSinceSourceChange += tpf;
 
-        StringBuilder cubeSources = new StringBuilder();
-        StringBuilder handDataSources = new StringBuilder();
+        StringBuilder handStatus = new StringBuilder();
         for(HandCube handCube : handCubes){
             handCube.handleMicrogestures();
             handCube.handleCubeActions(tpf);
-            Optional<HandGestureState> state = xrActionAppState.getHandGestureState(handCube.handSide);
             handCube.updateCube(tpf);
-            handCube.updateBars();
-            cubeSources.append(", ").append(handCube.handSide).append(": ").append(state.map(s -> s.getSource().toString()).orElse("not tracked"));
-            // whether the hand joints come from the bare hand or a held controller (e.g. Index controllers on SteamVR)
-            handDataSources.append(", ").append(handCube.handSide).append(": ")
-                    .append(xrActionAppState.getHandTrackingDataSource(handCube.handSide).map(Enum::toString).orElse("not tracked"));
+            handStatus.append("\n").append(describeHand(handCube.handSide));
         }
 
         statusLabel.setText(
                 "Microgestures: " + yesNo(xrAppState.checkExtensionLoaded(MetaHandMicrogestures.REQUIRED_EXTENSION)) +
-                ". Meta pinches: " + yesNo(xrAppState.checkExtensionLoaded("XR_FB_hand_tracking_aim")) + "\n" +
-                "Pinch source" + cubeSources + "\n" +
-                "Hand data" + handDataSources);
+                ". Meta pinches: " + yesNo(xrAppState.checkExtensionLoaded(HandTrackingAimState.REQUIRED_EXTENSION)) +
+                handStatus);
+    }
+
+    /**
+     * Where the hand's joints are coming from (only a bare hand gives Tamarin's gestures) and which of the example's
+     * actions are active for the hand. These are read through the action system like any other action, so they show
+     * the gesture from whichever source the preference picks (and controller buttons too, for actions that have them).
+     */
+    private String describeHand(HandSide handSide){
+        List<String> active = new ArrayList<>();
+        addIfAboveZero(active, handSide, ActionHandles.TRIGGER, "click");
+        addIfAboveZero(active, handSide, ActionHandles.GROW_CUBE, "grow");
+        addIfActive(active, handSide, ActionHandles.SPIN_CUBE, "spin");
+        addIfActive(active, handSide, ActionHandles.RESET_CUBE, "reset");
+        addIfActive(active, handSide, ActionHandles.FIST, "fist");
+        addIfActive(active, handSide, ActionHandles.POINT, "point");
+        addIfActive(active, handSide, ActionHandles.THUMBS_UP, "thumbs up");
+        return handSide + " joints: " + xrActionAppState.getHandJointsDataSource(handSide) +
+                ". Active: " + (active.isEmpty() ? "nothing" : String.join(", ", active));
+    }
+
+    private void addIfActive(List<String> active, HandSide handSide, ActionHandle actionHandle, String name){
+        if (xrActionAppState.getBooleanActionState(actionHandle, handSide.restrictToInputString).getState()){
+            active.add(name);
+        }
+    }
+
+    /**
+     * For float actions (e.g. a pinch's strength, or how far the trigger is pulled), shown with their value.
+     */
+    private void addIfAboveZero(List<String> active, HandSide handSide, ActionHandle actionHandle, String name){
+        float value = xrActionAppState.getFloatActionState(actionHandle, handSide.restrictToInputString).getState();
+        if (value > 0){
+            active.add(String.format("%s %.2f", name, value));
+        }
     }
 
     private static String yesNo(boolean value){
@@ -229,7 +244,7 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
     @Override protected void onDisable(){}
 
     /**
-     * A cube, the hand that controls it, and the bars showing the hand's gestures.
+     * A cube and the hand that controls it.
      */
     private class HandCube{
         final HandSide handSide;
@@ -246,8 +261,6 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
         final Vector3f currentPosition;
         float spinAngle = 0;
 
-        final List<Bar> bars = new ArrayList<>();
-
         HandCube(HandSide handSide, Vector3f startPosition, int startingColourIndex){
             this.handSide = handSide;
             this.startPosition = startPosition;
@@ -262,65 +275,6 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
             cube.setMaterial(cubeMaterial);
             cube.setLocalTranslation(startPosition);
             rootNodeDelegate.attachChild(cube);
-
-            createBars();
-        }
-
-        /**
-         * The bars are read directly from getHandGestureState with a forced source, so the runtime's and Tamarin's
-         * values can be compared whatever the cube is using.
-         */
-        private void createBars(){
-            // top row: pinches. A pair of bars per finger, runtime (Meta) on the left, Tamarin on the right
-            Vector3f pinchRowBottomCentre = startPosition.add(0, -0.5f, 0);
-            for(int i = 0; i < Finger.PINCHING_FINGERS.length; i++){
-                Finger finger = Finger.PINCHING_FINGERS[i];
-                float groupCentreX = (i - 1.5f) * 0.07f;
-                addBar(pinchRowBottomCentre.add(groupCentreX - 0.012f, 0, 0), null, RUNTIME_BAR_COLOUR,
-                        HandGestureSourcePreference.RUNTIME_ONLY, state -> state.getPinchStrength(finger), state -> state.isPinching(finger));
-                addBar(pinchRowBottomCentre.add(groupCentreX + 0.012f, 0, 0), null, TAMARIN_BAR_COLOUR,
-                        HandGestureSourcePreference.TAMARIN_ONLY, state -> state.getPinchStrength(finger), state -> state.isPinching(finger));
-                addLabel(finger.name().substring(0, 1), pinchRowBottomCentre.add(groupCentreX - 0.008f, -0.01f, 0));
-            }
-
-            // bottom row: gestures only Tamarin detects
-            Vector3f gestureRowBottomCentre = startPosition.add(0, -0.8f, 0);
-            addBar(gestureRowBottomCentre.add(-0.105f, 0, 0), "Fist", TAMARIN_BAR_COLOUR, HandGestureSourcePreference.TAMARIN_ONLY,
-                    HandGestureState::getFistStrength, HandGestureState::isFist);
-            addBar(gestureRowBottomCentre.add(-0.035f, 0, 0), "Point", TAMARIN_BAR_COLOUR, HandGestureSourcePreference.TAMARIN_ONLY,
-                    HandGestureState::getPointStrength, HandGestureState::isPointing);
-            addBar(gestureRowBottomCentre.add(0.035f, 0, 0), "Thumb", TAMARIN_BAR_COLOUR, HandGestureSourcePreference.TAMARIN_ONLY,
-                    HandGestureState::getThumbsUpStrength, HandGestureState::isThumbsUp);
-            // how much the palm faces the head (if this fills when the palm is facing the user the palm direction is right)
-            addBar(gestureRowBottomCentre.add(0.105f, 0, 0), "Palm", TAMARIN_BAR_COLOUR, HandGestureSourcePreference.TAMARIN_ONLY,
-                    state -> state.palmFacingAmount(xrAppState.getVrCameraPosition().subtract(state.getPalmPosition())),
-                    state -> state.palmFacingAmount(xrAppState.getVrCameraPosition().subtract(state.getPalmPosition())) > 0.8f);
-        }
-
-        private void addBar(Vector3f bottomCentre, String label, ColorRGBA colour, HandGestureSourcePreference source,
-                            Function<HandGestureState, Float> value, Function<HandGestureState, Boolean> active){
-            Bar bar = new Bar(colour, source, value, active);
-            bar.node.setLocalTranslation(bottomCentre);
-            rootNodeDelegate.attachChild(bar.node);
-            rootNodeDelegate.attachChild(bar.track);
-            bar.track.setLocalTranslation(bottomCentre.add(0, 0, -0.01f));
-            bars.add(bar);
-            if (label != null){
-                addLabel(label, bottomCentre.add(-0.025f, -0.01f, 0));
-            }
-        }
-
-        private void addLabel(String text, Vector3f topLeft){
-            Label label = new Label(text);
-            label.setLocalScale(0.0025f);
-            label.setLocalTranslation(topLeft);
-            rootNodeDelegate.attachChild(label);
-        }
-
-        void updateBars(){
-            for(Bar bar : bars){
-                bar.update(xrActionAppState.getHandGestureState(handSide, bar.source));
-            }
         }
 
         /**
@@ -353,7 +307,7 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
         }
 
         /**
-         * These actions are bound to both controller buttons and hand gestures (Tamarin gesture bindings, in the action
+         * These actions are bound to both controller buttons and hand gestures (gesture bindings, in the action
          * manifest) but they are read just like any other action, this code doesn't know or care which was used.
          */
         void handleCubeActions(float tpf){
@@ -394,58 +348,6 @@ public class MetaOnlyHandGesturesExampleState extends BaseAppState{
             cubeMaterial.setColor("Diffuse", colour);
             cubeMaterial.setColor("Ambient", colour);
         }
-    }
-
-    /**
-     * A bar whose height shows a gesture's strength (0 to 1), turning green when the gesture is on. A faint full height
-     * "track" behind it shows how far it is from full.
-     */
-    private class Bar{
-        final Node node;
-        final Node track;
-        final Material material;
-        final ColorRGBA colour;
-        final HandGestureSourcePreference source;
-        final Function<HandGestureState, Float> value;
-        final Function<HandGestureState, Boolean> active;
-
-        Bar(ColorRGBA colour, HandGestureSourcePreference source, Function<HandGestureState, Float> value, Function<HandGestureState, Boolean> active){
-            this.colour = colour;
-            this.source = source;
-            this.value = value;
-            this.active = active;
-
-            material = new Material(getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-            material.setColor("Color", colour);
-            node = unitHeightBar("bar", material, RenderQueue.Bucket.Opaque);
-            node.setLocalScale(1, 0.001f, 1);
-
-            Material trackMaterial = new Material(getApplication().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-            trackMaterial.setColor("Color", new ColorRGBA(1, 1, 1, 0.15f));
-            trackMaterial.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-            track = unitHeightBar("barTrack", trackMaterial, RenderQueue.Bucket.Transparent);
-            track.setLocalScale(1, BAR_MAX_HEIGHT, 1);
-        }
-
-        void update(Optional<HandGestureState> state){
-            float height = state.map(value).orElse(0f) * BAR_MAX_HEIGHT;
-            node.setLocalScale(1, Math.max(0.001f, height), 1);
-            material.setColor("Color", state.map(active).orElse(false) ? BAR_ACTIVE_COLOUR : colour);
-        }
-    }
-
-    /**
-     * A bar with its bottom at the node's origin and a height of 1, so the node can be scaled in y to set the
-     * bar's height (and it grows upwards from the bottom, rather than from its centre).
-     */
-    private static Node unitHeightBar(String name, Material material, RenderQueue.Bucket bucket){
-        Geometry bar = new Geometry(name, new Box(BAR_WIDTH / 2, 0.5f, BAR_WIDTH / 2));
-        bar.setMaterial(material);
-        bar.setQueueBucket(bucket);
-        bar.setLocalTranslation(0, 0.5f, 0);
-        Node node = new Node(name + "_node");
-        node.attachChild(bar);
-        return node;
     }
 
     @SuppressWarnings("DuplicatedCode") //as the examples are supposed to be self-contained accept some duplication

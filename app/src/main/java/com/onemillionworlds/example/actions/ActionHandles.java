@@ -39,4 +39,10 @@ public class ActionHandles{
      * A float action, bound to the middle finger pinch strength (Tamarin gesture binding) and the grip. See MetaOnlyHandGesturesExampleState
      */
     public static final ActionHandle GROW_CUBE = new ActionHandle(ActionSets.MAIN, "grow_cube");
+    /**
+     * Only bound to hand gestures (no controller bindings). MetaOnlyHandGesturesExampleState shows when they are active
+     */
+    public static final ActionHandle FIST = new ActionHandle(ActionSets.MAIN, "fist");
+    public static final ActionHandle POINT = new ActionHandle(ActionSets.MAIN, "point");
+    public static final ActionHandle THUMBS_UP = new ActionHandle(ActionSets.MAIN, "thumbs_up");
 }

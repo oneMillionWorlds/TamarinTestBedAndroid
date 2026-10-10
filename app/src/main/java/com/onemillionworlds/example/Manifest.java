@@ -17,8 +17,7 @@ import com.onemillionworlds.tamarin.actions.controllerprofile.MixedRealityMotion
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusGoController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.OculusTouchController;
 import com.onemillionworlds.tamarin.actions.controllerprofile.ValveIndexController;
-import com.onemillionworlds.tamarin.handgestures.Finger;
-import com.onemillionworlds.tamarin.handgestures.HandGestures;
+import com.onemillionworlds.tamarin.actions.gestures.Gesture;
 
 import java.util.function.Function;
 
@@ -72,8 +71,8 @@ public class Manifest {
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().triggerValue())
                 // hand tracking: thumb and index finger pinch. This also suggests the runtime's own pinch binding
                 // (HandInteractionExt), which is used where the runtime supports it, otherwise Tamarin detects the pinch
-                .withGestureBinding(HandSide.LEFT, HandGestures.pinch(Finger.INDEX))
-                .withGestureBinding(HandSide.RIGHT, HandGestures.pinch(Finger.INDEX))
+                .withGestureBinding(HandSide.LEFT, Gesture.PINCH_INDEX)
+                .withGestureBinding(HandSide.RIGHT, Gesture.PINCH_INDEX)
                 .withDesktopSimulationKeyTrigger(HandSide.LEFT, new KeyTrigger(KeyInput.KEY_F3), false)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_F4), false)
                 .build();
@@ -158,8 +157,8 @@ public class Manifest {
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().leftHand().xClick())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().aClick())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().aClick())
-                .withGestureBinding(HandSide.LEFT, HandGestures.thumbsUp())
-                .withGestureBinding(HandSide.RIGHT, HandGestures.thumbsUp())
+                .withGestureBinding(HandSide.LEFT, Gesture.THUMBS_UP)
+                .withGestureBinding(HandSide.RIGHT, Gesture.THUMBS_UP)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD0), false)
                 .build();
 
@@ -175,8 +174,8 @@ public class Manifest {
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().bClick())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().bClick())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().bClick())
-                .withGestureBinding(HandSide.LEFT, HandGestures.pinch(Finger.RING))
-                .withGestureBinding(HandSide.RIGHT, HandGestures.pinch(Finger.RING))
+                .withGestureBinding(HandSide.LEFT, Gesture.PINCH_RING)
+                .withGestureBinding(HandSide.RIGHT, Gesture.PINCH_RING)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD7), false)
                 .build();
 
@@ -192,10 +191,18 @@ public class Manifest {
                 .withSuggestedBinding(OculusTouchController.PROFILE, OculusTouchController.pathBuilder().rightHand().squeeze())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().leftHand().squeezeValue())
                 .withSuggestedBinding(ValveIndexController.PROFILE, ValveIndexController.pathBuilder().rightHand().squeezeValue())
-                .withGestureBinding(HandSide.LEFT, HandGestures.pinch(Finger.MIDDLE))
-                .withGestureBinding(HandSide.RIGHT, HandGestures.pinch(Finger.MIDDLE))
+                .withGestureBinding(HandSide.LEFT, Gesture.PINCH_MIDDLE)
+                .withGestureBinding(HandSide.RIGHT, Gesture.PINCH_MIDDLE)
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(KeyInput.KEY_NUMPAD9), false)
                 .build();
+
+        /*
+         * Actions bound only to a hand gesture (no controller bindings at all). Nothing uses these other than
+         * MetaOnlyHandGesturesExampleState showing when they are active. Only Tamarin detects these gestures.
+         */
+        Action fist = gestureOnlyAction(ActionHandles.FIST, "Fist", Gesture.FIST);
+        Action point = gestureOnlyAction(ActionHandles.POINT, "Point", Gesture.POINT);
+        Action thumbsUp = gestureOnlyAction(ActionHandles.THUMBS_UP, "Thumbs up", Gesture.THUMBS_UP);
 
         return ActionManifest.builder()
                 .withActionSet(ActionSet
@@ -218,6 +225,9 @@ public class Manifest {
                         .withAction(resetCube)
                         .withAction(spinCube)
                         .withAction(growCube)
+                        .withAction(fist)
+                        .withAction(point)
+                        .withAction(thumbsUp)
                         .build()
                 ).build();
     }
@@ -233,6 +243,19 @@ public class Manifest {
                 .withSuggestedBinding(MetaHandMicrogestures.PROFILE, gesture.apply(MetaHandMicrogestures.pathBuilder().leftHand()))
                 .withSuggestedBinding(MetaHandMicrogestures.PROFILE, gesture.apply(MetaHandMicrogestures.pathBuilder().rightHand()))
                 .withDesktopSimulationKeyTrigger(HandSide.RIGHT, new KeyTrigger(simulationKey), false)
+                .build();
+    }
+
+    /**
+     * A boolean action bound only to a hand gesture (on either hand).
+     */
+    private static Action gestureOnlyAction(ActionHandle actionHandle, String translatedName, Gesture gesture){
+        return Action.builder()
+                .actionHandle(actionHandle)
+                .translatedName(translatedName)
+                .actionType(ActionType.BOOLEAN)
+                .withGestureBinding(HandSide.LEFT, gesture)
+                .withGestureBinding(HandSide.RIGHT, gesture)
                 .build();
     }
 }
